@@ -55,6 +55,7 @@
             margin: 0 20px 20px; background: var(--primary); color: white; border: none;
             padding: 18px; border-radius: 12px; font-weight: 600; display: flex;
             justify-content: center; align-items: center; gap: 10px; cursor: pointer;
+            transition: 0.3s;
         }
 
         /* --- VISÃO GESTOR --- */
@@ -223,14 +224,26 @@
             }
         }
 
-        // Simulação de Registro
+        // Simulação de Registro com GPS otimizado
         let pointCount = 0;
         let workMinutes = 240; 
 
         function registrarPonto() {
             const btn = document.querySelector('.btn-ponto');
+            const span = btn.querySelector('span'); 
+            const textoOriginal = span.textContent; 
+
+            // Feedback visual imediato
             btn.disabled = true;
+            span.textContent = "Obtendo GPS..."; 
             
+            // Configuração para acelerar a captura do GPS
+            const opcoesGPS = {
+                enableHighAccuracy: true,
+                maximumAge: 30000, 
+                timeout: 10000     
+            };
+
             navigator.geolocation.getCurrentPosition((pos) => {
                 pointCount++;
                 const time = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
@@ -246,13 +259,21 @@
                 workMinutes += 60; 
                 updateProgress(workMinutes);
 
+                // Feedback visual de sucesso
                 btn.style.background = "#10b981";
+                span.textContent = "Sucesso!";
+
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.style.background = "#2563eb";
+                    span.textContent = textoOriginal;
                 }, 1500);
 
-            }, () => alert("Ative o GPS para testar"));
+            }, (erro) => {
+                alert("Não foi possível obter o GPS. Verifique a permissão do seu navegador.");
+                btn.disabled = false;
+                span.textContent = textoOriginal;
+            }, opcoesGPS);
         }
 
         function updateProgress(min) {
