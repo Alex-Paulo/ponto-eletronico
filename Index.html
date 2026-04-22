@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ponto Pro - Sistema Integrado</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #cbd5e1; color: var(--text); display: flex; justify-content: center; }
+
+        .mobile-container {
+            width: 100%; max-width: 414px; background: var(--bg); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.2);
+            padding-bottom: 70px; /* Espaço para a barra de navegação */
+        }
+
+        /* Telas */
+        .view { display: none; flex-direction: column; width: 100%; animation: fadeIn 0.3s ease; }
+        .view.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Cabeçalho */
+        .header {
+            background: var(--primary); padding: 30px 20px 50px; color: white;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+        }
+
+        /* Componentes Comuns */
+        .card-ponto {
+            background: white; margin: -40px 20px 20px; padding: 20px; border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08); text-align: center;
+        }
+        #time { font-size: 2.5rem; font-weight: 700; }
+
+        /* --- VISÃO FUNCIONÁRIO --- */
+        .work-info { padding: 0 20px; margin-bottom: 20px; }
+        .progress-container { background: #e2e8f0; height: 10px; border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        .progress-bar { background: var(--success); height: 100%; width: 45%; transition: 1s; }
+        
+        .btn-ponto {
+            margin: 0 20px 20px; background: var(--primary); color: white; border: none;
+            padding: 18px; border-radius: 12px; font-weight: 600; display: flex;
+            justify-content: center; align-items: center; gap: 10px; cursor: pointer;
+        }
+
+        /* --- VISÃO GESTOR --- */
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; margin-top: -30px; }
+        .metric-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .metric-card h4 { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px; }
+        .metric-card .val { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+
+        .log-list { padding: 0 20px; }
+        .log-item {
+            background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0;
+        }
+
+        /* Barra de Navegação Inferior */
+        .bottom-nav {
+            position: absolute; bottom: 0; width: 100%; height: 65px;
+            background: white; border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; color: var(--text-light);
+            cursor: pointer; font-size: 0.7rem; font-weight: 600; transition: 0.2s;
+        }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--primary); }
+
+        .footer { padding: 20px; text-align: center; font-size: 0.7rem; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <header class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 id="viewTitle">Meu Ponto</h2>
+                    <p style="font-size: 0.8rem; opacity: 0.8;" id="userSub">Alex Moreira | Desenvolvedor</p>
+                </div>
+                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class='bx bx-user' style="font-size: 1.2rem; color: white;"></i>
+                </div>
+            </div>
+        </header>
+
+        <div id="employeeView" class="view active">
+            <div class="card-ponto">
+                <div id="time">00:00:00</div>
+                <div id="date" style="font-size: 0.8rem; color: var(--text-light); text-transform: capitalize; margin-top: 5px;"></div>
+            </div>
+
+            <div class="work-info">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600;">
+                    <span>Jornada Diária (8h)</span>
+                    <span id="hoursStatus">4.2h / 8h</span>
+                </div>
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div id="extraLabel" style="display:none; font-size: 0.7rem; color: var(--warning); font-weight: 700;">
+                    <i class='bx bxs-zap'></i> HORA EXTRA DETECTADA
+                </div>
+            </div>
+
+            <button class="btn-ponto" onclick="registrarPonto()">
+                <i class='bx bx-fingerprint' style="font-size: 1.6rem;"></i>
+                <span>Registrar Ponto Agora</span>
+            </button>
+
+            <div style="padding: 0 20px;">
+                <h3 style="font-size: 0.9rem; margin-bottom: 10px;">Meus Registros (Hoje)</h3>
+                <div id="personalLogs">
+                    <div style="text-align:center; color:#94a3b8; font-size:0.8rem; padding: 10px;">Nenhum registro hoje.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="managerView" class="view">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h4>Presentes</h4>
+                    <div class="val">12 / 15</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Extras Hoje</h4>
+                    <div class="val" style="color: var(--warning);">03h 15m</div>
+                </div>
+            </div>
+
+            <div class="log-list">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="font-size: 0.9rem;">Monitoramento da Equipe</h3>
+                    <span style="font-size: 0.7rem; color: var(--success); font-weight: 700;">● AO VIVO</span>
+                </div>
+                
+                <div id="teamLogs">
+                    <div class="log-item">
+                        <div>
+                            <div style="font-weight:700; font-size: 0.85rem;">João Silva</div>
+                            <div style="font-size: 0.7rem; color: var(--text-light);">Entrada • <i class='bx bx-map-pin'></i> Localizado</div>
+                        </div>
+                        <div style="font-weight:700; color: var(--primary);">08:02</div>
+                    </div>
+                    <div class="log-item">
+                        <div>
+                            <div style="font-weight:700; font-size: 0.85rem;">Maria Oliveira</div>
+                            <div style="font-size: 0.7rem; color: var(--text-light);">Saída Almoço • <i class='bx bx-map-pin'></i> Localizado</div>
+                        </div>
+                        <div style="font-weight:700; color: var(--primary);">12:05</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            criado por 3s QScon Alex Moreira
+        </footer>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('employee', this)">
+                <i class='bx bx-time-five'></i>
+                <span>Meu Ponto</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('manager', this)">
+                <i class='bx bx-bar-chart-alt-2'></i>
+                <span>Gestão</span>
+            </div>
+        </nav>
+
+    </div>
+
+    <script>
+        // Relógio e Data
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('time').textContent = now.toLocaleTimeString('pt-BR');
+                const options = { weekday: 'long', day: '2-digit', month: 'long' };
+                document.getElementById('date').textContent = now.toLocaleDateString('pt-BR', options);
+            }, 1000);
+        }
+        startClock();
+
+        // Navegação entre abas
+        function switchTab(tab, el) {
+            const empView = document.getElementById('employeeView');
+            const manView = document.getElementById('managerView');
+            const title = document.getElementById('viewTitle');
+            const sub = document.getElementById('userSub');
+
+            // Reset nav icons
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+
+            if(tab === 'employee') {
+                empView.classList.add('active');
+                manView.classList.remove('active');
+                title.textContent = "Meu Ponto";
+                sub.textContent = "Alex Moreira | Desenvolvedor";
+            } else {
+                empView.classList.remove('active');
+                manView.classList.add('active');
+                title.textContent = "Painel Gestor";
+                sub.textContent = "Visualização da Equipe";
+            }
+        }
+
+        // Simulação de Registro
+        let pointCount = 0;
+        let workMinutes = 240; // Começa com 4h simuladas
+
+        function registrarPonto() {
+            const btn = document.querySelector('.btn-ponto');
+            btn.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition((pos) => {
+                pointCount++;
+                const time = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                const list = document.getElementById('personalLogs');
+                
+                if(pointCount === 1) list.innerHTML = ""; // Limpa o "Nenhum registro"
+
+                const item = document.createElement('div');
+                item.style.cssText = "background: #f1f5f9; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; border-left: 4px solid var(--primary);";
+                item.innerHTML = `<span style="font-size: 0.8rem; font-weight: 600;">Registro #${pointCount}</span> <span style="font-weight: 700;">${time}</span>`;
+                list.prepend(item);
+
+                // Evolui a barra de progresso
+                workMinutes += 60; 
+                updateProgress(workMinutes);
+
+                btn.style.background = "#10b981";
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.style.background = "#2563eb";
+                }, 1500);
+
+            }, () => alert("Ative o GPS para testar"));
+        }
+
+        function updateProgress(min) {
+            const bar = document.getElementById('progressBar');
+            const label = document.getElementById('hoursStatus');
+            const extra = document.getElementById('extraLabel');
+            let percent = (min / 480) * 100;
+
+            if(percent > 100) {
+                bar.style.width = "100%";
+                bar.style.background = "var(--warning)";
+                extra.style.display = "block";
+                label.textContent = `${(min/60).toFixed(1)}h / 8h (Extra)`;
+            } else {
+                bar.style.width = percent + "%";
+                label.textContent = `${(min/60).toFixed(1)}h / 8h`;
+            }
+        }
+    </script>
+</body>
+</html>
